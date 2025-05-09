@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  UserRegistrationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.example.demo.handler.DynamoDBStreamHandler
+      Runtime: java17
+      MemorySize: 512
+      Timeout: 10
+      CodeUri: target/user-registration-lambda-1.0-SNAPSHOT.jar
+      Events:
+        DynamoDBStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt UserTable.StreamArn
+            StartingPosition: TRIM_HORIZON
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UserRegistration
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
